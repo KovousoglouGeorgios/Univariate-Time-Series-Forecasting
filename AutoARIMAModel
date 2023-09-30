@@ -1,0 +1,125 @@
+import time
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.metrics import mean_squared_error, mean_absolute_percentage_error
+from pmdarima import auto_arima, metrics as metr
+from pmdarima.pipeline import Pipeline
+from pmdarima.preprocessing import BoxCoxEndogTransformer
+from sklearn.model_selection import TimeSeriesSplit
+
+class AutoARIMAModel:
+    def __init__(self, max_p=10, max_q=10):
+        self.max_p = max_p
+        self.max_q = max_q
+        self.pipeline = None
+
+    def create_pipeline(self):
+        self.pipeline = Pipeline([
+            # ('boxcox', BoxCoxEndogTransformer(lmbda2=1e-6)),
+            ('arima', auto_arima(
+                y=train_real,
+                max_p=self.max_p,
+                max_q=self.max_q,
+                seasonal=False,
+                suppress_warnings=True,
+                trace=True))
+        ])
+
+    def perform_cross_validation(self, train_real, transformed_ts, n_splits=3, test_size = 14):
+        tscv = TimeSeriesSplit(n_splits= n_splits, test_size = test_size)
+        rmse_scores = []
+        mape_scores = []
+        smape_scores = []
+
+        for train_index, test_index in tscv.split(train_real):
+            train_data, test_data = transformed_ts.iloc[train_index], transformed_ts.iloc[test_index]
+            self.pipeline.fit(train_data)
+            print(train_data.shape[0])
+            print(test_data.shape[0])
+            
+            forecasts = self.pipeline.predict(len(test_data))
+
+            # Check for NaN or infinity in forecasts
+            if np.isnan(forecasts).any() or np.isinf(forecasts).any():
+                print("Invalid forecasts found in the current fold. Skipping evaluation for this fold.")
+                continue
+
+            # Visualize the predicted values alongside the actual values
+            plt.figure()
+            plt.plot(test_data.index, test_data.values, label='Actual')
+            plt.plot(test_data.index, forecasts, label='Predicted')
+            plt.title("Actual vs. Predicted")
+            plt.xlabel("Time")
+            plt.ylabel("Transformed Number of Crimes")
+            plt.legend()
+            plt.show()
+
+            # Calculate RMSE
+            rmse = np.sqrt(mean_squared_error(test_data, forecasts))
+            rmse_scores.append(rmse)
+
+            # Calculate MAPE
+            mape = mean_absolute_percentage_error(test_data, forecasts)
+            mape_scores.append(mape)
+
+            # Calculate SMAPE
+            smape = metr.smape(test_data, forecasts)
+            smape_scores.append(smape)
+
+        # Print average scores
+        print(f"Average RMSE: {np.mean(rmse_scores)}")
+        print(f"Average MAPE: {np.mean(mape_scores)}")
+        print(f"Average SMAPE: {np.mean(smape_scores)}")
+
+    def make_final_predictions(self, train_real, test_real):
+        self.pipeline.fit(train_real)
+        forecasts = self.pipeline.predict(len(test_real))
+
+        # Calculate the evaluation metrics on the test set
+        final_RMSE = np.sqrt(mean_squared_error(test_real, forecasts))
+        final_MAPE = mean_absolute_percentage_error(test_real, forecasts)
+        final_SMAPE = metr.smape(test_real, forecasts)
+
+        return final_RMSE, final_MAPE, final_SMAPE, forecasts
+
+if __name__ == "__main__":
+    
+    # Keep the starting time
+    start_time = time.time()
+
+    # Assuming 'train' and 'transformed_ts' are defined elsewhere in the code
+    model = AutoARIMAModel(max_p=10, max_q=10)
+    model.create_pipeline()
+    model.perform_cross_validation(train_real, transformed_ts, n_splits=3, test_size = 14)
+
+    # Make real final predictions
+    final_RMSE, final_MAPE, final_SMAPE, forecasts = model.make_final_predictions(train_real, test_real)
+
+    # Calculate execution time
+    execution_time = time.time() - start_time
+
+    # Print their scores
+    print("RMSE:", final_RMSE)
+    print("MAPE:", final_MAPE)
+    print("SMAPE:", final_SMAPE)
+    print("Execution Time:", execution_time)
+
+    # Create an array for the x-axis (time index)
+    time_index = np.arange(len(train_real) + len(test_real))
+
+    # Create a larger figure
+    plt.figure(figsize=(12, 6))
+
+    # Assuming 'predicted_values' is defined elsewhere in the code
+    # Plot the true test data
+    plt.plot(time_index[len(train_real):], test_real.values, label='True Test Data', color='blue', linewidth=2)
+
+    # Plot the predicted values
+    plt.plot(time_index[len(train_real):], forecasts, label='Predicted Values', color='red', linestyle='dashed', linewidth=2)
+
+    plt.xlabel('Time')
+    plt.ylabel('Value')
+    plt.title('Time Series Forecasting - Predicted vs. True Test Data')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
