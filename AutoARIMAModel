@@ -1,5 +1,6 @@
 import time
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_squared_error, mean_absolute_percentage_error
 from pmdarima import auto_arima, metrics as metr
@@ -7,36 +8,56 @@ from pmdarima.pipeline import Pipeline
 from pmdarima.preprocessing import BoxCoxEndogTransformer
 from sklearn.model_selection import TimeSeriesSplit
 
+# Define a class for the AutoARIMA model
 class AutoARIMAModel:
     def __init__(self, max_p=10, max_q=10):
+        """
+        Initialize the AutoARIMAModel object.
+
+        Parameters:
+        - max_p: Maximum number of autoregressive (AR) terms in the ARIMA model.
+        - max_q: Maximum number of moving average (MA) terms in the ARIMA model.
+        """
         self.max_p = max_p
         self.max_q = max_q
         self.pipeline = None
 
+    # Method to create the model pipeline
     def create_pipeline(self):
+        """
+        Create an ARIMA model pipeline.
+
+        This method sets up the pipeline for the AutoARIMA model, including data transformations and hyperparameter tuning.
+        """
         self.pipeline = Pipeline([
-            # ('boxcox', BoxCoxEndogTransformer(lmbda2=1e-6)),
             ('arima', auto_arima(
                 y=train_real,
                 max_p=self.max_p,
                 max_q=self.max_q,
                 seasonal=False,
                 suppress_warnings=True,
-                trace=True))
+                trace=True))  # AutoARIMA model
         ])
 
-    def perform_cross_validation(self, train_real, transformed_ts, n_splits=3, test_size = 14):
-        tscv = TimeSeriesSplit(n_splits= n_splits, test_size = test_size)
+    # Method to perform cross-validation
+    def perform_cross_validation(self, train_real, n_splits=3, test_size=14):
+        """
+        Perform cross-validation to evaluate the AutoARIMA model.
+
+        Parameters:
+        - train_real: Training time series data.
+        - n_splits: Number of cross-validation splits.
+        - test_size: Size of the test set in each split.
+        """
+        tscv = TimeSeriesSplit(n_splits=n_splits, test_size=test_size)
         rmse_scores = []
         mape_scores = []
         smape_scores = []
 
         for train_index, test_index in tscv.split(train_real):
-            train_data, test_data = transformed_ts.iloc[train_index], transformed_ts.iloc[test_index]
+            train_data, test_data = train_real.iloc[train_index], train_real.iloc[test_index]
             self.pipeline.fit(train_data)
-            print(train_data.shape[0])
-            print(test_data.shape[0])
-            
+
             forecasts = self.pipeline.predict(len(test_data))
 
             # Check for NaN or infinity in forecasts
@@ -71,7 +92,21 @@ class AutoARIMAModel:
         print(f"Average MAPE: {np.mean(mape_scores)}")
         print(f"Average SMAPE: {np.mean(smape_scores)}")
 
+    # Method to make final predictions
     def make_final_predictions(self, train_real, test_real):
+        """
+        Make final predictions using the trained AutoARIMA model.
+
+        Parameters:
+        - train_real: Training time series data.
+        - test_real: Test time series data.
+
+        Returns:
+        - final_RMSE: Root Mean Square Error of the final predictions.
+        - final_MAPE: Mean Absolute Percentage Error of the final predictions.
+        - final_SMAPE: Symmetric Mean Absolute Percentage Error of the final predictions.
+        - forecasts: Predicted values.
+        """
         self.pipeline.fit(train_real)
         forecasts = self.pipeline.predict(len(test_real))
 
@@ -81,45 +116,3 @@ class AutoARIMAModel:
         final_SMAPE = metr.smape(test_real, forecasts)
 
         return final_RMSE, final_MAPE, final_SMAPE, forecasts
-
-if __name__ == "__main__":
-    
-    # Keep the starting time
-    start_time = time.time()
-
-    # Assuming 'train' and 'transformed_ts' are defined elsewhere in the code
-    model = AutoARIMAModel(max_p=10, max_q=10)
-    model.create_pipeline()
-    model.perform_cross_validation(train_real, transformed_ts, n_splits=3, test_size = 14)
-
-    # Make real final predictions
-    final_RMSE, final_MAPE, final_SMAPE, forecasts = model.make_final_predictions(train_real, test_real)
-
-    # Calculate execution time
-    execution_time = time.time() - start_time
-
-    # Print their scores
-    print("RMSE:", final_RMSE)
-    print("MAPE:", final_MAPE)
-    print("SMAPE:", final_SMAPE)
-    print("Execution Time:", execution_time)
-
-    # Create an array for the x-axis (time index)
-    time_index = np.arange(len(train_real) + len(test_real))
-
-    # Create a larger figure
-    plt.figure(figsize=(12, 6))
-
-    # Assuming 'predicted_values' is defined elsewhere in the code
-    # Plot the true test data
-    plt.plot(time_index[len(train_real):], test_real.values, label='True Test Data', color='blue', linewidth=2)
-
-    # Plot the predicted values
-    plt.plot(time_index[len(train_real):], forecasts, label='Predicted Values', color='red', linestyle='dashed', linewidth=2)
-
-    plt.xlabel('Time')
-    plt.ylabel('Value')
-    plt.title('Time Series Forecasting - Predicted vs. True Test Data')
-    plt.legend()
-    plt.grid(True)
-    plt.show()
