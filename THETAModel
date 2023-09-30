@@ -10,10 +10,10 @@ from darts.metrics.metrics import mape, rmse, smape
 from sklearn.model_selection import ParameterGrid, TimeSeriesSplit
 
 # Define a class for time series forecasting using the Theta model
-class TimeSeriesForecasting:
+class THETA_ts_foreacasting:
     def __init__(self, train_real, test_real):
         """
-        Initialize the TimeSeriesForecasting object.
+        Initialize the THETA_ts_foreacasting object.
 
         Parameters:
         - train_real: Training time series data.
@@ -108,7 +108,7 @@ class TimeSeriesForecasting:
 
         forecast = best_model.predict(n=len(self.test_real_dart))
         RMSE_value = rmse(self.test_real_dart, forecast)
-        MAPE_value = mape(self.test_real_dart, forecast)
+        MAPE_value = mape(self.test_real_dart, forecast)/100
         SMAPE_value = smape(self.test_real_dart, forecast)
 
         return RMSE_value, MAPE_value, SMAPE_value
@@ -135,7 +135,7 @@ if __name__ == "__main__":
     start_time = time.time()
 
     # Create an instance of the TimeSeriesForecasting class and provide it with training and test data
-    forecasting = TimeSeriesForecasting(train_real, test_real)
+    forecasting = THETA_ts_foreacasting(train_real, test_real)
 
     # Prepare the time series data (formatting, creating Darts TimeSeries objects)
     forecasting.prepare_data()
