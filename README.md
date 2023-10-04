@@ -13,9 +13,10 @@ The univariate dataset we work with comprises two main components:
 Date Index: A chronological reference for tracking the timing of these crime occurrences.
 
 By focusing on these key elements, we aim to develop a robust crime forecasting model that can assist law enforcement agencies in proactive decision-making and resource allocation.
-The proposed model is described in the above file named “Los Angeles Crime Forecasting”. 
-Initially, the step of data pre-processing consists of outliers and missing values handling, and transformation of time series to stationary. 
-In the next step, five very popular algorithms for univariate time series analysis are deployed and their results are visualized and portrayed in the last stage of this deployment.
+
+The model we propose is detailed in the file titled "Los Angeles Crime Forecasting" above. Our approach begins with data pre-processing, which includes managing outliers, addressing missing values, and transforming the time series into a stationary form.
+
+Subsequently, we apply five widely recognized algorithms for univariate time series analysis. The outcomes of these algorithms are then visualized and presented in the final stage of our deployment process.
 
 ![Alt Text](https://github.com/KovousoglouGeorgios/Univariate-Time-Series-Forecasting/blob/3537c1c68ed4d7208606e504dcc7d3b68109f9b3/results%20plot.jpg)
 
