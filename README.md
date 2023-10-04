@@ -17,7 +17,7 @@ The proposed model is described in the above file named “Los Angeles Crime For
 Initially, the step of data pre-processing consists of outliers and missing values handling, and transformation of time series to stationary. 
 In the next step, five very popular algorithms for univariate time series analysis are deployed and their results are visualized and portrayed in the last stage of this deployment.
 
- 
+![Alt Text](https://github.com/KovousoglouGeorgios/Univariate-Time-Series-Forecasting/blob/3537c1c68ed4d7208606e504dcc7d3b68109f9b3/results%20plot.jpg)
 
 In summary, univariate time series forecasting presents a complex challenge that requires careful consideration. It is essential to emphasize the pivotal role of data preprocessing in this analysis. Statistical models typically operate under the assumption of stationarity in the time series. In our study, we achieved stationarity through differencing the dataset.
 
