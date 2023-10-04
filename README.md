@@ -21,6 +21,6 @@ In the next step, five very popular algorithms for univariate time series analys
 
 In summary, univariate time series forecasting presents a complex challenge that requires careful consideration. It is essential to emphasize the pivotal role of data preprocessing in this analysis. Statistical models typically operate under the assumption of stationarity in the time series. In our study, we achieved stationarity through differencing the dataset.
 
- 
+ ![Alt Text](https://github.com/KovousoglouGeorgios/Univariate-Time-Series-Forecasting/blob/d778482f309db66d2caea88fed4a81c5c460ead5/results%20table.jpg)
 
 Regarding model selection, it is our belief that the various models demonstrated comparable performance. While the AutoARIMA model emerged as the most efficient option, its performance did not exhibit a significant divergence from the other models.
