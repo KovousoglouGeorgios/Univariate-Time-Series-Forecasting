@@ -1,5 +1,5 @@
-# Univariate-Time-Series-Forecasting
-Los Angeles Crime Forecasting
+## Univariate-Time-Series-Forecasting
+# Los Angeles Crime Forecasting
 Crime forecasting plays a pivotal role in enhancing policing decision-making processes. The primary objective of this project is to develop a two-week crime forecasting model. Our aim is to predict the incidents of crime that may occur in Los Angeles.
 
 To achieve this, we leverage a publicly available dataset titled "Crime Data from 2020 to Present," accessible via the website: https://data.lacity.org/. This dataset provides a comprehensive record of reported crimes within the City of Los Angeles, dating back to 2020.
